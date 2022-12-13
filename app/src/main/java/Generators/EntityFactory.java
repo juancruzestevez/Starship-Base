@@ -4,6 +4,7 @@ import Entities.*;
 import Entities.Bullet.Bullet;
 import Entities.Bullet.BulletType;
 import Entities.Bullet.Colition.NormalBulletColition;
+import Entities.Bullet.Colition.PiercingColition;
 import Entities.weapon.Shoot.*;
 import Entities.weapon.Weapon;
 import Movers.Mover;
@@ -27,9 +28,21 @@ public class EntityFactory {
     public static Mover createBullet(BulletType bulletType, String ownerId, double angle, Point point) {
         return switch (bulletType) {
             case NORMAL -> new Mover(new Bullet(bulletType, IdGenerator.generateId(EntityType.BULLET), ownerId, new NormalBulletColition(), BULLET_SIZE), point, Math.cos(Math.toRadians(angle))*BULLET_SPEED, Math.sin(Math.toRadians(angle))*BULLET_SPEED);
-            case PIERCING -> new Mover(new Bullet(bulletType, IdGenerator.generateId(EntityType.BULLET), ownerId, new NormalBulletColition(), BULLET_SIZE), point, Math.cos(Math.toRadians(angle))*BULLET_SPEED, Math.sin(Math.toRadians(angle))*BULLET_SPEED);
+            case PIERCING -> new Mover(new Bullet(bulletType, IdGenerator.generateId(EntityType.BULLET), ownerId, new PiercingColition(), BULLET_SIZE), point, Math.cos(Math.toRadians(angle))*BULLET_SPEED, Math.sin(Math.toRadians(angle))*BULLET_SPEED);
             case ROCKET -> new Mover(new Bullet(bulletType, IdGenerator.generateId(EntityType.BULLET), ownerId, new NormalBulletColition(), BULLET_SIZE), point, Math.cos(Math.toRadians(angle))*BULLET_SPEED / 4, Math.sin(Math.toRadians(angle))*BULLET_SPEED / 4);
         };
+    }
+
+    public static Game createGameState2Players(){
+        Map<String, ShipController> controllers = new HashMap<>();
+        Map<String, Integer> points = new HashMap<>();
+        ShipController newController = createShipcontroller(new Point(200, 200));
+        ShipController newController2 = createShipcontroller(new Point(800, 200));
+        points.put(newController.getId(), 0);
+        controllers.put(newController.getId(), newController);
+        points.put(newController2.getId(), 0);
+        controllers.put(newController2.getId(), newController2);
+        return new GameState(1000, 1000, controllers, new HashMap<String, Mover>(), new ArrayList<String>(), points);
     }
 
     public static Game createGameState(){

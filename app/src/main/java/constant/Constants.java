@@ -37,4 +37,5 @@ public class Constants {
     public static final String PAUSE_GAME = "P";
     public static final String RESUME_GAME = "R";
     public static final String SAVE_GAME = "G";
+    public final static String KEYS_PATH = System.getProperty("user.dir") + "/app/src/main/java/config/playerKeys.json";
 }

@@ -74,17 +74,17 @@ public class PausedGame implements Game{
 
     @Override
     public Game generateAsteroid() {
-        return gameState.generateAsteroid();
+        return this;
     }
 
     @Override
     public Game generatePowerUp() {
-        return gameState.generatePowerUp();
+        return this;
     }
 
     @Override
     public Map<String, ShipController> removeControllers(Map<String, ShipController> controllers) {
-        return gameState.removeControllers(controllers);
+        return Map.of();
     }
 
 }

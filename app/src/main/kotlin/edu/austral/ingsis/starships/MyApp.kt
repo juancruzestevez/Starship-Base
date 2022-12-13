@@ -4,6 +4,8 @@ import constant.Constants.*
 import Generators.EntityFactory.*
 import adapters.Adapter
 import adapters.Parser
+import config.MyFileReader
+import constant.Constants
 import edu.austral.ingsis.starships.ui.*
 import edu.austral.ingsis.starships.ui.ElementColliderType.*
 import game.KeyMovement
@@ -111,16 +113,30 @@ class MyCollisionListener() : EventListener<Collision> {
 }
 
 class MyKeyPressedListener(): EventListener<KeyPressed> {
+
+    private var keyBindMap: Map<String, Map<KeyMovement, KeyCode>> = MyFileReader(KEYS_PATH).readBindings()
     override fun handle(event: KeyPressed) {
+        val key = event.key
+        adapter.gamestate.ships.forEach { controller ->
+            keyBindMap[controller.id]?.forEach { (movement, keyCode) ->
+                if (key == keyCode) {
+                    adapter = adapter.handleShipAction(controller.id, movement)
+                }
+            }
+        }
+    }
+/*    override fun handle(event: KeyPressed) {
         when(event.key) {
             KeyCode.UP -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.ACCELERATE)
             KeyCode.DOWN -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.SHOOT)
             KeyCode.LEFT -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.TURN_LEFT)
             KeyCode.RIGHT -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.TURN_RIGHT)
             KeyCode.SPACE -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.POWERUP)
+            KeyCode.P -> adapter = adapter.pause()
+            KeyCode.R -> adapter.resume()
 
             else -> {}
         }
     }
-
+*/
 }

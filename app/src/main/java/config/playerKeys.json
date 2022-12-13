@@ -1,0 +1,1 @@
+[{"id":"STARSHIP-1","map":{"SHOOT":"L","POWERUP":"Down","TURN_RIGHT":"Right","TURN_LEFT":"Left","ACCELERATE":"Up"}},{"id":"STARSHIP-0","map":{"SHOOT":"Space","POWERUP":"S","TURN_RIGHT":"D","TURN_LEFT":"A","ACCELERATE":"W"}}]
