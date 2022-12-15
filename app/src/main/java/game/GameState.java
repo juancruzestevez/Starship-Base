@@ -1,10 +1,12 @@
 package game;
 
 import Entities.*;
+import Entities.Bullet.Bullet;
 import Generators.EntityFactory;
 import Movers.Movable;
 import Movers.Mover;
 import Movers.MoverShip;
+import constant.Constants;
 
 import java.util.*;
 
@@ -14,9 +16,9 @@ public class GameState implements Game{
     private final Map<String, ShipController> controllers;
     private final Map<String, Mover> entities;
     private final List<String> idsToRemove;
-    private final Map<String, Integer> points;
+    private final Map<String, Double> points;
 
-    public GameState(double width, double height, Map<String, ShipController> controllers, Map<String, Mover> entities, List<String> idsToRemove, Map<String, Integer> points) {
+    public GameState(double width, double height, Map<String, ShipController> controllers, Map<String, Mover> entities, List<String> idsToRemove, Map<String, Double> points) {
         this.width = width;
         this.height = height;
         this.controllers = controllers;
@@ -41,7 +43,9 @@ public class GameState implements Game{
 
     private void addBulletsEntity(List<Mover> bullets, Map<String, Mover> newEntities){
         for (Mover mover : bullets) {
-            newEntities.put(mover.getId(), mover);
+            if (entities.size() < 15){
+                newEntities.put(mover.getId(), mover);
+            }
         }
     }
 
@@ -80,13 +84,30 @@ public class GameState implements Game{
         Movable entity1 = findMovable(id1);
         Movable entity2 = findMovable(id2);
 
+        Map<String, Double> newMap = addPoints(entity1.getEntity(), entity2.getEntity());
+
         Optional<Entity> newEntity1 = entity1.getEntity().collide(entity2.getEntity());
         Optional<Entity> newEntity2 = entity2.getEntity().collide(entity1.getEntity());
 
         addNewEntity(newEntities, newControllers, newIdsToRemove, entity1, newEntity1);
         addNewEntity(newEntities, newControllers, newIdsToRemove, entity2, newEntity2);
 
-        return new GameState(width, height, newControllers, newEntities, newIdsToRemove, points);
+        return new GameState(width, height, newControllers, newEntities, newIdsToRemove, newMap);
+    }
+
+    private Map<String, Double> addPoints(Entity entity1, Entity entity2){
+        Map<String, Double> newPoints = new HashMap<>(points);
+        if (!(Objects.equals(entity1.getOwnerId(), entity2.getId()) || Objects.equals(entity1.getId(), entity2.getOwnerId())) && entity1.getType() != entity2.getType()){
+            addPointsToMap(newPoints, entity1, entity2);
+            addPointsToMap(newPoints, entity2, entity1);
+        }
+        return newPoints;
+    }
+    private void addPointsToMap(Map<String, Double> newMap, Entity entity1, Entity entity2){
+        if(newMap.containsKey(entity1.getOwnerId())){
+            double points = newMap.get(entity1.getOwnerId()) + Constants.MAX_POINTS - entity2.getsize();
+            newMap.put(entity1.getOwnerId(), points);
+        }
     }
 
     private void addNewEntity(Map<String, Mover> newEntities, Map<String, ShipController> newControllers, List<String> newIdsToRemove, Movable entity1, Optional<Entity> newEntity1) {
@@ -105,7 +126,7 @@ public class GameState implements Game{
     }
 
     @Override
-    public Map<String, Integer> getPoints() {
+    public Map<String, Double> getPoints() {
         return points;
     }
 
@@ -157,26 +178,29 @@ public class GameState implements Game{
         for (String ids : idsToRemove){
             newControllers.remove(ids);
         }if (getNumberOfShips() == 0){
-            System.exit(0);
+            endGame();
         }
         return newControllers;
+    }
+
+    private void endGame(){
+        for (Map.Entry<String, Double> entry : points.entrySet()){
+            System.out.println(entry.getKey() + " points: " + entry.getValue());
+        }if (points.size() > 1){
+            String winner = Collections.max(points.entrySet(), Map.Entry.comparingByValue()).getKey();
+            System.out.println(winner + " WINS!!!!!!");
+        }
+        System.exit(0);
     }
 
     public List<String> getIdsToRemove(){
         return idsToRemove;
     }
 
-    public Game generateAsteroid(){
+    public Game generateEntity(Entity entity){
         Map<String, Mover> newEntities = new HashMap<>(entities);
-        Mover newAsteroid = EntityFactory.spawnAsteroid(EntityFactory.generateRandomPoint());
-        newEntities.put(newAsteroid.getId(), newAsteroid);
-        return new GameState(width, height, controllers, newEntities, filterEntities(), points);
-    }
-
-    public Game generatePowerUp(){
-        Map<String, Mover> newEntities = new HashMap<>(entities);
-        Mover newPowerUp = EntityFactory.spawnPowerUp(EntityFactory.generateRandomPoint());
-        newEntities.put(newPowerUp.getId(), newPowerUp);
+        Mover newEntity = EntityFactory.spawnEntity(EntityFactory.generateRandomPoint(), entity);
+        newEntities.put(newEntity.getId(), EntityFactory.spawnEntity(EntityFactory.generateRandomPoint(), entity));
         return new GameState(width, height, controllers, newEntities, filterEntities(), points);
     }
 }

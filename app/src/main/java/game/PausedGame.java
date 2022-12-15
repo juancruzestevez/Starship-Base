@@ -1,5 +1,6 @@
 package game;
 
+import Entities.Entity;
 import Movers.Movable;
 import Movers.Mover;
 
@@ -30,7 +31,7 @@ public class PausedGame implements Game{
     }
 
     @Override
-    public Map<String, Integer> getPoints() {
+    public Map<String, Double> getPoints() {
         return gameState.getPoints();
     }
 
@@ -73,14 +74,10 @@ public class PausedGame implements Game{
     }
 
     @Override
-    public Game generateAsteroid() {
+    public Game generateEntity(Entity entity) {
         return this;
     }
 
-    @Override
-    public Game generatePowerUp() {
-        return this;
-    }
 
     @Override
     public Map<String, ShipController> removeControllers(Map<String, ShipController> controllers) {

@@ -1,10 +1,7 @@
 package Entities;
 
 import constant.Constants;
-import Generators.IdGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class Asteroid implements Entity{
@@ -12,9 +9,12 @@ public class Asteroid implements Entity{
     final String id;
     final double size;
 
-    public Asteroid( String id, double size) {
+    final double damage;
+
+    public Asteroid(String id, double size) {
         this.id = id;
         this.size = size;
+        this.damage = size * Constants.ASTEROID_DAMAGE;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class Asteroid implements Entity{
 
     @Override
     public double getDamage() {
-        return 0;
+        return damage;
     }
 
     @Override
@@ -50,5 +50,10 @@ public class Asteroid implements Entity{
     @Override
     public double getsize() {
         return size;
+    }
+
+    @Override
+    public String getOwnerId() {
+        return id;
     }
 }

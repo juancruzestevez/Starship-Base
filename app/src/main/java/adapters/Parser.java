@@ -21,9 +21,9 @@ public class Parser {
 
     public static ElementModel parsEntity(Mover mover){
         return switch (mover.getEntity().getType()) {
-            case BULLET -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), 10, 10, mover.calculateDegree(), ElementColliderType.Rectangular, null);
-            case ASTEROID -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), mover.getEntity().getsize(), mover.getEntity().getsize(), mover.calculateDegree(), ElementColliderType.Elliptical, null);
-            case POWERUP -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), mover.getEntity().getsize(), mover.getEntity().getsize(), mover.calculateDegree(), ElementColliderType.Elliptical, null);
+            case BULLET -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), mover.getEntity().getsize(), mover.getEntity().getsize(), mover.calculateDegree(), ElementColliderType.Elliptical, new ImageRef("normalbullet", SHIP_HEIGHT, SHIP_WIDTH));
+            case ASTEROID -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), mover.getEntity().getsize(), mover.getEntity().getsize(), mover.calculateDegree(), ElementColliderType.Elliptical, new ImageRef("asteroid", SHIP_HEIGHT, SHIP_WIDTH));
+            case POWERUP -> new ElementModel(mover.getId(), mover.getPosition().getX(), mover.getPosition().getY(), mover.getEntity().getsize(), mover.getEntity().getsize(), mover.calculateDegree(), ElementColliderType.Rectangular, new ImageRef("powerup", SHIP_HEIGHT, SHIP_WIDTH));
             default -> null;
         };
 

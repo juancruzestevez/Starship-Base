@@ -1,19 +1,21 @@
 package Entities;
 
+import constant.Constants;
+
+import java.util.Objects;
 import java.util.Optional;
 
 public final class Ship implements Entity{
     final String id;
     final EntityType entityType = EntityType.STARSHIP;
     final double life;
-    final int lives;
     final double size;
+    final double damage = Constants.LIFE;
     final int power;
-    public Ship(String id, double life, double size, int lives, int power) {
+    public Ship(String id, double life, double size, int power) {
         this.id = id;
         this.life = life;
         this.size = size;
-        this.lives = lives;
         this.power = power;
     }
 
@@ -34,17 +36,17 @@ public final class Ship implements Entity{
 
     @Override
     public Optional<Entity> collide(Entity other) {
-        if (other.getType() == EntityType.ASTEROID){
-            if (lives == 0){
-                return Optional.empty();
-            }else{
-                return Optional.of(new Ship(id, life, size, lives - 1, power));
-            }
-        }if(other.getType() == EntityType.POWERUP){
-            return Optional.of(new Ship(id, life, size, lives, power + 1));
-        }
-        else{
+        if (Objects.equals(other.getOwnerId(), id)){
             return Optional.of(this);
+        }if(other.getType() == EntityType.POWERUP){
+            return Optional.of(new Ship(id, life, size, power + 1));
+        }if (other.getType() == EntityType.STARSHIP){
+            return Optional.of(this);
+        }else{
+            if (life - other.getDamage() <= 0){
+                return Optional.empty();
+            }
+            return Optional.of(new Ship(id, life - other.getDamage(), size, power));
         }
     }
 
@@ -53,8 +55,9 @@ public final class Ship implements Entity{
         return size;
     }
 
-    public int getLives() {
-        return lives;
+    @Override
+    public String getOwnerId() {
+        return "";
     }
 
     public double getLife() {

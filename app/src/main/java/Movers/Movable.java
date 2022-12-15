@@ -1,6 +1,5 @@
 package Movers;
 
-import Entities.Collideable;
 import Entities.Entity;
 
 public interface Movable {

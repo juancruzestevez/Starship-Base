@@ -30,15 +30,20 @@ public class PowerUp implements Entity{
 
     @Override
     public Optional<Entity> collide(Entity other) {
-        if (other.getType() == EntityType.STARSHIP){
+        if (other.getType() == EntityType.STARSHIP || other.getType() == EntityType.BULLET){
             return Optional.empty();
-        }else{
+        }
+        else{
             return Optional.of(this);
         }
     }
-
     @Override
     public double getsize() {
         return size;
+    }
+
+    @Override
+    public String getOwnerId() {
+        return id;
     }
 }

@@ -1,17 +1,6 @@
 package Movers;
 
-import Entities.Asteroid;
-import Entities.Collideable;
 import Entities.Entity;
-import Entities.EntityType;
-import Generators.IdGenerator;
-
-import java.util.List;
-import java.util.Optional;
-
-import static Generators.RandomNumberGenerator.getRandomNumber;
-import static constant.Constants.*;
-import static constant.Constants.MAX_ASTEROID_SIZE;
 
 public class Mover implements Movable {
     public final Entity entity;

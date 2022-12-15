@@ -11,5 +11,6 @@ public interface Entity{
     public double getDamage();
     public Optional<Entity> collide(Entity other);
     double getsize();
+    String getOwnerId();
 
 }

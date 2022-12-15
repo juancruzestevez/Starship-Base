@@ -24,9 +24,9 @@ public class Bullet implements Entity {
 
 
 
-    public Bullet( BulletType bulletType, String id, String ownerId, BulletColition bulletColition, double size) {
+    public Bullet( BulletType bulletType, String id, String ownerId, BulletColition bulletColition, double size, double damage) {
         this.bulletColition = bulletColition;
-        this.damage = Constants.BULLET_DAMAGE;
+        this.damage = damage;
         this.bulletType = bulletType;
         this.id = id;
         this.ownerId = ownerId;

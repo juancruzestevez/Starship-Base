@@ -1,5 +1,7 @@
 package adapters;
 
+import Entities.Asteroid;
+import Generators.EntityFactory;
 import edu.austral.ingsis.starships.ui.ElementModel;
 import game.*;
 import javafx.collections.ObservableMap;
@@ -21,10 +23,10 @@ public class Adapter{
 
     public Adapter moveEntities() {
         if (Math.random() < spawnProbs){
-            return new Adapter(gamestate.generateAsteroid().moveEntities(), spawnProbs);
+            return new Adapter(gamestate.generateEntity(EntityFactory.createAsteroid()).moveEntities(), spawnProbs);
         }
         if (Math.random() < spawnProbs){
-            return new Adapter(gamestate.generatePowerUp().moveEntities(), spawnProbs);
+            return new Adapter(gamestate.generateEntity(EntityFactory.createPowerUp()).moveEntities(), spawnProbs);
         }
         return new Adapter(gamestate.moveEntities(), spawnProbs);
     }

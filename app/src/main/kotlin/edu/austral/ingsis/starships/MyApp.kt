@@ -11,43 +11,107 @@ import edu.austral.ingsis.starships.ui.ElementColliderType.*
 import game.KeyMovement
 import javafx.application.Application
 import javafx.application.Application.launch
+import javafx.geometry.Pos
 import javafx.scene.Scene
+import javafx.scene.control.Label
 import javafx.scene.input.KeyCode
+import javafx.scene.layout.StackPane
+import javafx.scene.layout.VBox
+import javafx.scene.paint.Color
 import javafx.stage.Stage
 
 
-private var adapter = Adapter(createGameState(), SPAWN_PROBABILITY)
+private var adapter = Adapter(createGameState(2), SPAWN_PROBABILITY)
 private val imageResolver = CachedImageResolver(DefaultImageResolver())
 private val facade = ElementsViewFacade(imageResolver)
 private val keyTracker = KeyTracker()
-
 
 fun main() {
     launch(MyStarships::class.java)
 }
 
 class MyStarships() : Application() {
-    companion object {
-        val STARSHIP_IMAGE_REF = ImageRef("starship", 70.0, 70.0)
-    }
+    var gameScene = Scene(StackPane())
 
     override fun start(primaryStage: Stage) {
 
         adapter.parseEntities(facade.elements)
 
-        facade.timeListenable.addEventListener(MyTimeListener(facade.elements))
+
         facade.collisionsListenable.addEventListener(MyCollisionListener())
         keyTracker.keyPressedListenable.addEventListener(MyKeyPressedListener())
-        val scene = Scene(facade.view)
+        facade.view.id = "game"
+        val (generalPane, lifeLabels, scores) = buildGeneralPane()
+        facade.timeListenable.addEventListener(MyTimeListener(facade.elements, lifeLabels, scores))
+        val scene = Scene(generalPane)
+        //val scene = Scene(facade.view)
+
+
         keyTracker.scene = scene
+        scene.stylesheets.add(this::class.java.classLoader.getResource("Style.css")?.toString())
 
         primaryStage.scene = scene
         primaryStage.height = 1000.0
         primaryStage.width = 1000.0
-
+        facade.showCollider.value = false
         facade.start()
         keyTracker.start()
         primaryStage.show()
+
+
+    }
+
+    private fun buildGeneralPane(): Triple<StackPane, List<Label>, List<Label>> {
+        val generalPane = StackPane()
+
+        val (livesLayout, lifeLabels) = buildLivesLayout()
+        val (scoreLayout, scoreLabels) = buildScoresLayout()
+
+        generalPane.children.addAll(facade.view, livesLayout, scoreLayout)
+        return Triple(generalPane, lifeLabels, scoreLabels)
+
+    }
+
+    private fun buildLivesLayout(): Pair<VBox, List<Label>> {
+        return buildVerticalPlayerDataLabelLayout(Pos.TOP_LEFT, "HEALTH")
+    }
+    private fun buildScoresLayout(): Pair<VBox, List<Label>> {
+        return buildVerticalPlayerDataLabelLayout(Pos.TOP_RIGHT, "SCORES")
+    }
+
+    private fun buildVerticalPlayerDataLabelLayout(position: Pos, layoutTitle: String): Pair<VBox, List<Label>> {
+        val verticalLayout = VBox()
+        verticalLayout.alignment = position
+        val playerQuantity = adapter.gamestate.numberOfShips
+        val labelList = ArrayList<Label>();
+        labelList.add(generateLayoutTitle(layoutTitle))
+        repeat(playerQuantity) {index ->
+            labelList.add(generateInitialPlayerLabel(index))
+        }
+        verticalLayout.children.addAll(labelList)
+
+        return verticalLayout to labelList
+    }
+
+    private fun generateInitialPlayerLabel(index: Int): Label {
+        val label = Label("Player " + (index+1) + ": ")
+        label.textFill = Color.WHITE
+        return label
+
+    }
+    private fun generateLayoutTitle(title: String): Label {
+        val layoutTitle = Label(title)
+        layoutTitle.textFill = Color.WHITE
+        return layoutTitle
+    }
+
+    private fun generateLabelList(layoutTitle: String, playerQuantity: Int): ArrayList<Label> {
+        val labelList = ArrayList<Label>();
+        labelList.add(generateLayoutTitle(layoutTitle))
+        repeat(playerQuantity) { index ->
+            labelList.add(generateInitialPlayerLabel(index))
+        }
+        return labelList
     }
 
     override fun stop() {
@@ -56,12 +120,13 @@ class MyStarships() : Application() {
     }
 }
 
-class MyTimeListener(private val elements: Map<String, ElementModel>) : EventListener<TimePassed> {
+class MyTimeListener(private val elements: Map<String, ElementModel>, private var lifeLabels: List<Label>, private var scoreLabels: List<Label>) : EventListener<TimePassed> {
     override fun handle(event: TimePassed) {
         adapter = adapter.moveEntities()
         updateFacadeControllers()
         updateFacadeEntities()
         removeEntities()
+        updateLabels()
     }
 
     private fun removeEntities(){
@@ -94,6 +159,30 @@ class MyTimeListener(private val elements: Map<String, ElementModel>) : EventLis
             }
         }
     }
+
+    private fun updateLabels(){
+        updateScoreLabels()
+        updateHealthLabels()
+    }
+
+    private fun updateHealthLabels() {
+        var numberShip = 0;
+        adapter.gamestate.ships.forEach {
+            val shipNumber = it.id
+            lifeLabels.get(numberShip).text = "Player ${(shipNumber)}: " + it.shipMover.ship.life + ", power: " + it.shipMover.ship.power
+            numberShip += 1
+        }
+    }
+
+    private fun updateScoreLabels() {
+        var numberShip = 0;
+        adapter.gamestate.points.forEach {
+            val shipNumber = it.key
+            scoreLabels.get(numberShip).text = "Player ${(shipNumber)}: " + it.value
+            numberShip += 1
+        }
+    }
+
 }
 
 class MyCollisionListener() : EventListener<Collision> {
@@ -117,6 +206,7 @@ class MyKeyPressedListener(): EventListener<KeyPressed> {
     private var keyBindMap: Map<String, Map<KeyMovement, KeyCode>> = MyFileReader(KEYS_PATH).readBindings()
     override fun handle(event: KeyPressed) {
         val key = event.key
+        handlePauseResume(key)
         adapter.gamestate.ships.forEach { controller ->
             keyBindMap[controller.id]?.forEach { (movement, keyCode) ->
                 if (key == keyCode) {
@@ -125,18 +215,16 @@ class MyKeyPressedListener(): EventListener<KeyPressed> {
             }
         }
     }
-/*    override fun handle(event: KeyPressed) {
-        when(event.key) {
-            KeyCode.UP -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.ACCELERATE)
-            KeyCode.DOWN -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.SHOOT)
-            KeyCode.LEFT -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.TURN_LEFT)
-            KeyCode.RIGHT -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.TURN_RIGHT)
-            KeyCode.SPACE -> adapter = adapter.handleShipAction("STARSHIP-0", KeyMovement.POWERUP)
-            KeyCode.P -> adapter = adapter.pause()
-            KeyCode.R -> adapter.resume()
 
+    private fun handlePauseResume(key: KeyCode) {
+        when (key) {
+            keyCodeOf(PAUSE_GAME) -> adapter = adapter.pause()
+            keyCodeOf(RESUME_GAME) -> adapter = adapter.resume()
             else -> {}
         }
     }
-*/
+
+    private fun keyCodeOf(string: String): Any {
+        return KeyCode.valueOf(string)
+    }
 }

@@ -1,6 +1,5 @@
 package Movers;
 
-import Entities.Collideable;
 import Entities.Entity;
 import Entities.Ship;
 

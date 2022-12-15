@@ -1,4 +1,5 @@
 package game;
+import Entities.Entity;
 import Movers.Movable;
 import Movers.Mover;
 import java.util.List;
@@ -7,7 +8,7 @@ public interface Game {
     Game handleShipAction(String id, KeyMovement keyMovement);
     Game moveEntities();
     Game collideEntity(String id1, String id2);
-    Map<String,Integer> getPoints();
+    Map<String,Double> getPoints();
     Integer getNumberOfShips();
     Game pause();
     Game resume();
@@ -16,7 +17,6 @@ public interface Game {
     Map<String, Mover> removeEntity(Map<String, Mover> entity);
     List<String> filterEntities();
     List<String> getIdsToRemove();
-    Game generateAsteroid();
-    Game generatePowerUp();
+    Game generateEntity(Entity entity);
     Map<String, ShipController> removeControllers(Map<String, ShipController> controllers);
 }
