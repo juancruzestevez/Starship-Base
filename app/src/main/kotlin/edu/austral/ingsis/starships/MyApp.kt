@@ -36,8 +36,6 @@ class MyStarships() : Application() {
     override fun start(primaryStage: Stage) {
 
         adapter.parseEntities(facade.elements)
-
-
         facade.collisionsListenable.addEventListener(MyCollisionListener())
         keyTracker.keyPressedListenable.addEventListener(MyKeyPressedListener())
         facade.view.id = "game"
@@ -45,14 +43,12 @@ class MyStarships() : Application() {
         facade.timeListenable.addEventListener(MyTimeListener(facade.elements, lifeLabels, scores))
         val scene = Scene(generalPane)
         //val scene = Scene(facade.view)
-
-
         keyTracker.scene = scene
         scene.stylesheets.add(this::class.java.classLoader.getResource("Style.css")?.toString())
 
         primaryStage.scene = scene
-        primaryStage.height = 1000.0
-        primaryStage.width = 1000.0
+        primaryStage.height = GAME_HEIGHT
+        primaryStage.width = GAME_WIDTH
         facade.showCollider.value = false
         facade.start()
         keyTracker.start()
@@ -89,12 +85,11 @@ class MyStarships() : Application() {
             labelList.add(generateInitialPlayerLabel(index))
         }
         verticalLayout.children.addAll(labelList)
-
         return verticalLayout to labelList
     }
 
     private fun generateInitialPlayerLabel(index: Int): Label {
-        val label = Label("Player " + (index+1) + ": ")
+        val label = Label("")
         label.textFill = Color.WHITE
         return label
 
@@ -103,15 +98,6 @@ class MyStarships() : Application() {
         val layoutTitle = Label(title)
         layoutTitle.textFill = Color.WHITE
         return layoutTitle
-    }
-
-    private fun generateLabelList(layoutTitle: String, playerQuantity: Int): ArrayList<Label> {
-        val labelList = ArrayList<Label>();
-        labelList.add(generateLayoutTitle(layoutTitle))
-        repeat(playerQuantity) { index ->
-            labelList.add(generateInitialPlayerLabel(index))
-        }
-        return labelList
     }
 
     override fun stop() {
