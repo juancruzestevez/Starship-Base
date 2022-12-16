@@ -21,7 +21,7 @@ import javafx.scene.paint.Color
 import javafx.stage.Stage
 
 
-private var adapter = Adapter(createGameState(2), SPAWN_PROBABILITY)
+private var adapter = Adapter(createGameState(1), SPAWN_PROBABILITY)
 private val imageResolver = CachedImageResolver(DefaultImageResolver())
 private val facade = ElementsViewFacade(imageResolver)
 private val keyTracker = KeyTracker()
@@ -40,7 +40,7 @@ class MyStarships() : Application() {
         keyTracker.keyPressedListenable.addEventListener(MyKeyPressedListener())
         facade.view.id = "game"
         val (generalPane, lifeLabels, scores) = buildGeneralPane()
-        facade.timeListenable.addEventListener(MyTimeListener(facade.elements, lifeLabels, scores))
+        facade.timeListenable.addEventListener(MyTimeListener(facade.elements, lifeLabels, scores, GameFinishedListener(primaryStage)))
         val scene = Scene(generalPane)
         //val scene = Scene(facade.view)
         keyTracker.scene = scene
@@ -106,13 +106,21 @@ class MyStarships() : Application() {
     }
 }
 
-class MyTimeListener(private val elements: Map<String, ElementModel>, private var lifeLabels: List<Label>, private var scoreLabels: List<Label>) : EventListener<TimePassed> {
+class MyTimeListener(private val elements: Map<String, ElementModel>, private var lifeLabels: List<Label>, private var scoreLabels: List<Label>, private val gameFinishedListener: GameFinishedListener) : EventListener<TimePassed> {
+    val gameFinishedEmitter = createGameFinishedEmitter(gameFinishedListener)
     override fun handle(event: TimePassed) {
         adapter = adapter.moveEntities()
         updateFacadeControllers()
         updateFacadeEntities()
         removeEntities()
         updateLabels()
+        checkGameOver()
+    }
+
+    private fun createGameFinishedEmitter(gameFinishedListener: GameFinishedListener): ListenableEmitter<GameEnding> {
+        val gameEndingEmitter = ListenableEmitter<GameEnding>()
+        gameEndingEmitter.addEventListener(gameFinishedListener)
+        return gameEndingEmitter
     }
 
     private fun removeEntities(){
@@ -169,6 +177,18 @@ class MyTimeListener(private val elements: Map<String, ElementModel>, private va
         }
     }
 
+    private fun checkGameOver(){
+        val max = adapter.gamestate.maxPoints
+        if (adapter.gamestate.numberOfShips == 0 && !gameFinishedListener.called){
+            if (adapter.gamestate.points.size == 1){
+                gameFinishedEmitter.emit(GameEnding("SINGLE", max))
+            } else {
+                gameFinishedEmitter.emit(GameEnding("MULTYPLAYER", max))
+            }
+            // gameEndingEmitter.emit(GameOverEvent())
+        }
+    }
+
 }
 
 class MyCollisionListener() : EventListener<Collision> {
@@ -212,5 +232,45 @@ class MyKeyPressedListener(): EventListener<KeyPressed> {
 
     private fun keyCodeOf(string: String): Any {
         return KeyCode.valueOf(string)
+    }
+}
+data class GameEnding(val endingType: String, val winnerId: String)
+class GameFinishedListener(val primaryStage: Stage): EventListener<GameEnding>{
+    var called = false
+    private fun createGameOverScene(): Scene {
+        val gameOverLabel = Label("Game Over")
+        val scoresLabel = Label(generateScoresString())
+        val layout = VBox()
+        layout.children.addAll(gameOverLabel, scoresLabel)
+        return Scene(layout)
+    }
+    private fun createWinningScene(winnerId: String): Scene {
+        val gameOverLabel = Label("Player $winnerId wins!")
+        val scoresLabel = Label(generateScoresString())
+        val layout = VBox()
+        layout.children.addAll(gameOverLabel, scoresLabel)
+        return Scene(layout)
+    }
+
+
+    override fun handle(event: GameEnding) {
+        called = true
+        if(adapter.gamestate.points.size == 1){
+            val gameOverScene = createGameOverScene()
+            primaryStage.scene = gameOverScene
+        } else{
+            val winningScene = createWinningScene(event.winnerId)
+            primaryStage.scene = winningScene
+        }
+
+    }
+
+    private fun generateScoresString(): String {
+        var scoresString = ""
+        adapter.gamestate.points.forEach {
+            val (shipId, score) = it
+            scoresString = "$scoresString\nPlayer $shipId - $score points"
+        }
+        return scoresString
     }
 }

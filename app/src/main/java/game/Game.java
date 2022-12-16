@@ -19,4 +19,5 @@ public interface Game {
     List<String> getIdsToRemove();
     Game generateEntity(Entity entity);
     Map<String, ShipController> removeControllers(Map<String, ShipController> controllers);
+    String getMaxPoints();
 }

@@ -8,7 +8,7 @@ public class Constants {
     public static final double SHIP_WIDTH = 50;
     public static final double SHIP_HEIGHT = 50;
     public static final int LIFE = 300;
-    public static final double SHIP_ACCELERATION = 0.3;
+    public static final double SHIP_ACCELERATION = 0.5;
     public static final double ROTATION_DEGREES = 15;
 
     //BULLET CONSTANTS

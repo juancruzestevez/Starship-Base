@@ -84,4 +84,9 @@ public class PausedGame implements Game{
         return Map.of();
     }
 
+    @Override
+    public String getMaxPoints() {
+        return gameState.getMaxPoints();
+    }
+
 }

@@ -177,10 +177,13 @@ public class GameState implements Game{
         HashMap<String, ShipController> newControllers= new HashMap<>(controllers);
         for (String ids : idsToRemove){
             newControllers.remove(ids);
-        }if (getNumberOfShips() == 0){
-            endGame();
         }
         return newControllers;
+    }
+
+    @Override
+    public String getMaxPoints() {
+        return Collections.max(points.entrySet(), Map.Entry.comparingByValue()).getKey();
     }
 
     private void endGame(){
